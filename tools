@@ -1,0 +1,10 @@
+The content will be divided into the different sections that make up a penetration test, which are:
+1. Reconnaissance/Information Gathering
+2. Scanning & Enummeration
+3. Exploitation
+4. Maintaining Access
+5. Covering Tracks (cleaning up). 
+
+All the tools can be used to assist in a penetration test, although one does not need to use them all in all cases. 
+
+Reconnaissance 
