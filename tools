@@ -7,4 +7,13 @@ The content will be divided into the different sections that make up a penetrati
 
 All the tools can be used to assist in a penetration test, although one does not need to use them all in all cases. 
 
-Reconnaissance 
+1. Reconnaissance 
+
+Reconnaissance is actually made up of two different parts, Active and Passive Reconnaissance. Passive essentially means any information gathering that does not hit the servers of the company.
+We might be looking for physical things like the office layout, the security around the office, what the office access card looks like, who the employees are, what they do, email addresses etc.
+All this information can be found without actually hitting the servers. In this phase it would also be useful to find any sub domains etc. 
+
+Active information gathering is when we actually hit the servers, and sort of moves into the second phase of the penetration test, which is scanning. 
+
+For passive information gathering, that is not for physical/social pen testing:
+https://hunter.io
