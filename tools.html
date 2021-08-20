@@ -7,6 +7,8 @@ The content will be divided into the different sections that make up a penetrati
 
 All the tools can be used to assist in a penetration test, although one does not need to use them all in all cases. 
 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 1. Reconnaissance 
 
 Reconnaissance is actually made up of two different parts, Active and Passive Reconnaissance. Passive essentially means any information gathering that does not hit the servers of the company.
@@ -30,4 +32,28 @@ https://hashes.com/en/decrypt/hash - use it to crack hashes that you find on deh
 https://github.com/Rog3rSm1th/Profil3r - a potential tool to use that could be used instead of dehashed
 
 Web information Gathering:
+
+sublister - can be installed on kali using "apt install sublist3r"
+syntax is: sublist3r -d domain
+https://crt.sh/ - another tool available on the interweb for finding sub domains.
+https://github.com/OWASP/Amass - extremely powerful tool, used by bountyhunters. Install on Kali using snap. Install snapd first and then install Amass using snap. 
+https://github.com/tomnomnom/httprobe - once we have a list of sub domains, we need to check which ones are actually live and active. We can use this tool to test that.
+
+Determine what the sites are built with:
+https://builtwith.com/ - This site can be used to tell you what tools, widgits, tech, languages and CMS has been used to build the site.
+Wappalyzer is a browser plugin that can be used as well. We need information regarding tech being used, any type of information could be useful later.
+whatweb - tool built into Kali. syntax: "whatweb https://domain
+Burp Suite - built into Kali.
+
+Google Fu 
+
+https://ahrefs.com/blog/google-advanced-search-operators/ - very useful document to go back to when needed.
+some syntax:
+site:domain
+site:domain -www (will not bring in www.domain
+site:domain filetype:docx (pdf, csv, etc)
+
+Social Media
+LinkedIn - Can be used to find all sort of info from pictures for physical security tests and SE. LinkedIn will also provide lists of people working at the company. This can be used to link back to Hunter.io to create new usernames that you can add to the list.
+Twitter - Can also be used to gather physical security information
 
