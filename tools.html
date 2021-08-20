@@ -64,4 +64,15 @@ Twitter - Can also be used to gather physical security information
 nmap - need one say more? :)
 syntax for TCP scan - nmap -T4 -p- -A IP (-T4 is speed, for lower risk of detection go for 1, for quick when not worried about detection, go for 4, -p- is to say scan all ports, -A says we want all the information, like OS info, versions of services etc)
 syntax for UDP scan - nmap -T4 -sU -p IP (-T4 for speed, -sU to say UDP scan, -p to only scan the top 1000 ports since UDP is connectionless and will take a long time if scanning all 65000 ports.)
+nikto - useful web vulberability scanner. Worth noting that if there is a WAF, it might block nikto scans, so when doing this in the real world, use best judgement
+syntax: nikto -h http://hostnameorip
+syntax: nikto -h https://hostnameorip
+
+Directory busting tools
+dirbuster - can be used to bust the directories found by Nikto
+syntax: dirbuster& - loads the program. Put in the host and port, make sure to include http or https and the port, eg: http://10.0.2.10:80/ then select go faster and find the wordlist under /usr/share/wordlist/dirbuster/ (start with the small list). File extension is important to know. If the server is running Apache, it will be using php. If it was a Microsoft server, then most likely file extensions would be asp or aspx.
+dirb - similar to dirbuster
+gobuster - similar to dirbuster
+
+
 
