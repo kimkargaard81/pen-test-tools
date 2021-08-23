@@ -82,6 +82,44 @@ syntax: msfconsole
 :> search smb
 look for auxillory and if you scroll down in the list you will find one that checks SMB version under scanners.
 syntax: use auxiliary/scanner/smb/smb_version
+syntax: info (shows the info and options available within the module)
+alternative syntax: options (just shows the options available)
+syntax: SET RHOSTS IP (note, if it says RHOSTS (plural), then one can enter an IP range using IP/24 or whatever the network range is)
+syntax: run
+
+SMBclient - allows us to connect to the share (if annonymous connections are allowed) so we can see what is on the share.
+syntax: smbclient -L \\\\IP\\ (-L means list, and we are character escaping using the backslashes) 
+if we find a share, then we can try to connect another way
+syntax: smbclient \\\\IP\\sharename
+We need to gather the info we can at this stage.
+
+SSH:
+
+Sometimes nmap scan will give us the version of SSH, but if not, we can connect to SSH and hopefully get a version number. Note, that this would be considered exploitation, since we are making a connection.
+if we connect to ssh and it give us an error about the algorithm, if it is old, then we can run the following:
+syntax: ssh IP -oKexAlgorithms=+keymethodlistedinerror
+if we then get a cipher error, we can add cipher to the connection info:
+syntax: ssh IP -oKexAlgorithms=+keymethodlistedinerror -c aes128-cbc (for example)
+Note: Sometimes a banner is exposed which says the version of SSH
+
+Researching the vulnerabilities found:
+
+Set the vulnerabilities from low hanging fruit to more difficult. Port 80/443 and SMB are probably low hanging fruit, where SSH for example would be not very likely to have a vulnerabilitiy. 
+
+First way is to use google and google each version + exploit
+
+Look for Exploit-DB entries and others like Rapid7. 
+
+If one does not have internet access, one can search for the vulnerabilities locally on the kali box. 
+
+syntax: searchsploit system version (do not be too specific, so for example samba 2 not samba 2.2.1a)
+
+Scanning: 
+
+Nessus
+Install Nessus and then run a basic scan. You can also look at the Advanced scan and run that instead. Once the scan is finished, remove the groupings and then look at the ones with highest severity first.
+
+
 
 
 
