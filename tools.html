@@ -74,5 +74,14 @@ syntax: dirbuster& - loads the program. Put in the host and port, make sure to i
 dirb - similar to dirbuster
 gobuster - similar to dirbuster
 
+SMB: 
+
+Really important to find out the version inforomation for SMB to determine if there are vulnerabilities. The nmap scan run earlier will provide some information, but generally we have to do some more digging to find the actual version running. 
+Run Metasploit to find the version of SMB
+syntax: msfconsole
+:> search smb
+look for auxillory and if you scroll down in the list you will find one that checks SMB version under scanners.
+syntax: use auxiliary/scanner/smb/smb_version
+
 
 
