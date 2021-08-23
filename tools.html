@@ -149,6 +149,26 @@ non-staged example: windows/meterpreter_reverse_tcp
 staged example: windows/meterpreter/reverse_tcp 
 Note, the above syntax is how to know if a payload is staged or non-staged, so it carries through through out Metasploit. 
 
+Metasploit:
+syntax: msfconsole
+syntax: search vulnerability (for example samba 2.2)
+based on our info gathering, we should know the underlying OS, so we can select the correct exploit
+syntax: use exploit
+syntax: options
+syntax: set RHOSTS
+syntax: options
+syntax: run or exploit
+if the session keeps getting killed, then hit:
+syntx: options
+now, Metasploit should tell you which payload it is using, this is where staged versus non-staged comes into play.
+syntax: set linux/x86/tab/tab and it should show you the payload options
+find an option that is not the type that you have already tried.
+syntax: set payload
+syntax: options
+syntax: set LHOST and RHOST (if needed)
+syntax: exploit
+Keep trying until you find an exploit that works for you.
+
 
 
 
