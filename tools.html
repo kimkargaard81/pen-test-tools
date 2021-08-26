@@ -202,7 +202,30 @@ syntax: run
 
 Credential Spraying and Password Stuffing:
 
+We need to use the usernames and passwords we found during info gathering and we are going to hit the website login with those. This has turned out to be one of the most common ways to get access to external systems in pen tests. 
 
+Google Foxy Proxy and install the plugin in Firefox. 
+Once installed, click on options and add Burpsuite as a proxy. Add the local IP (127.0.0.1) and port 8080. 
+Once saved, hit Foxy Proxy and turn on Burpsuite
+Then, load Burp Suite
+Turn off the intercepter in Burp Suite and browse to Tesla.com (note, this is just an example, do not hit tesla.com)
+then click on sign in 
+Turn the intercept back on
+enter a username and password (any random) and hit login. Burp Suite should intercept the request.
+Send the intercept to Intruder in Burp Suite
+Select the Positions tab in Intruder
+Hit Clear
+Select the email and click on add
+Select the password and click add
+Select Attack Type Pitchfork
+Click on Payloads
+Select the list of users found and copy and then paste it. 
+Then, on the second one, select all the passwords, copy and paste it. 
+This will then take each username and link it to the password associated with it. 
+Click attack. 
+You are looking for maybe a 301 redirect or a significant change in the length. Also, pause, click on the response and look for something like: "We could not log you in". This could be added under Options Grep Match (remove the other ones listed there). Run the attack again and it will now clearly show with a checkbox the logins that get that response. 
+
+For password spraying, we would need to remove the password option from the above and only have the username list added and switch the Attack Type to sniper. Then, you would add a specific password. NOTE! Since you are most likely doing this against AD, make sure to ask before you attempt this and say: "Hey, how many attempts have you set before you lock the accounts?"
 
 
 
