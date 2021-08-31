@@ -1,1 +1,16 @@
+Pen testing an internal AD network
 
+1. LLMNR Poisoning
+
+link-local multicast name resolution (LLMNR) 
+This is basically used when DNS fails and is similar to NETBIOS. NOTE: The key flaw is that when responding, the services uses a user´s username and NTLMv2 hash.
+
+To run this, make sure you have Impacter installed on Kali. https://github.com/SecureAuthCorp/impacket
+
+In kali:
+syntax: responder -I interface -rdwv (v for verbose to ensure that the hash is shown twice)
+
+once responder picks up a username and hash, we can make use of hashcat or other hash cracking tools to try to crack the hash. 
+Make sure to put the username and hash in a file. check hashcat --help to find the module for the type of hash you need to crack. NTLM is the standard Windows hash and the module for that is 5600. 
+hashcat -m 5600 ntlmhash.txt /usr/share/wordlists/rockyou.txt
+If you need another password list, google "password seclist".
