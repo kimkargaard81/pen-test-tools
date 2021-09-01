@@ -100,3 +100,54 @@ sudo ntlmrelayx.py -6 -t ldaps://10.0.1.4 -wh fakewpad.marvel.local -l lootme (m
 
 if you go to the lootme folder on Kali, once a computer has been rebooted or some time has passed, then you should see all sorts of interesting information. 
 
+5. Post Exploitation Enumeration
+
+Go to https://github.com/PowerShellMafia/PowerSploit and download/clone the repo to a Windows machine on the network.
+
+go to cmd on the Windows machine and cd to the Recon folder of the repo you just downloaded. 
+
+We need to bypass the execution policy on, so we run:
+
+syntax: powershell -ep bypass (ep stands for execution policy)
+
+Now, there are a huge amount of commands one can run with PowerView. Check out: 
+https://gist.github.com/HarmJ0y/184f9822b195c52dd50c379ed3117993 for more examples. 
+
+Let´s get info about the domain. In cmd, run:
+syntax: Get-NetDomain
+
+If we want specifics on the Domain Controller or Controllers, we can run:
+syntax: get-NetDomainController
+
+This provides the IP of the Domain Controller, the OS the DC is running etc. 
+
+We can get the DomainPolicy. 
+
+syntax: get-DomainPolicy
+
+We can see the Kerberos Policy from this (for example). 
+
+We can also find the password policy. 
+
+syntax: (Get-DomainPolicy)."systemaccess"
+
+This can give us a great amount of details, like the minimum password lenght. If we know the minimum is 7 for example, then we could spray the systems with passwords that are 7 characters. 
+
+We can get a list of all the users and any descriptions by running:
+
+syntax: get-NetUser
+
+We can look through this for usernames and any useful info in descriptions (sometimes people leave system service passwords in descriptions, even though these should not typically be there.)
+
+The problem with the above command is that we can end up with a huge list on a corporate network. So, we can run:
+
+syntax: get-NetUser | select cn
+
+This will just list the users. To get the usernames, we could run:
+
+syntax: get-NetUser | select samaccountname
+
+We could also just get the descriptions by running:
+
+syntax: get-NetUser | select description
+
