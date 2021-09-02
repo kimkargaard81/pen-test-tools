@@ -102,6 +102,8 @@ if you go to the lootme folder on Kali, once a computer has been rebooted or som
 
 5. Post Exploitation Enumeration
 
+Powerview
+
 Go to https://github.com/PowerShellMafia/PowerSploit and download/clone the repo to a Windows machine on the network.
 
 go to cmd on the Windows machine and cd to the Recon folder of the repo you just downloaded. 
@@ -150,4 +152,25 @@ syntax: get-NetUser | select samaccountname
 We could also just get the descriptions by running:
 
 syntax: get-NetUser | select description
+
+There are a huge amount of commands and details we can get from Powerview. It is worth digging around using the gists for example queries.
+
+BloodHound
+
+BloodHound will give us amazing graphical views of the entire network. To use it, we need to install BloodHound on Kali.
+
+syntax: apt install bloodhound
+syntax: neo4j console
+Browse to the localhost:port that neo4j opens
+the username and password by default are neo4j. 
+Change the password to something else.
+Then, in terminal run:
+syntax: bloodhound
+Bloodhound should open. Now, we need to get an ingestor, as there is no data in there. 
+So, we need to download https://github.com/BloodHoundAD/BloodHound/blob/master/Collectors/SharpHound.ps1 onto one of the Windows client machines on the network. Once that is done, run cmd.
+syntax: powershell -ep bypass 
+syntax: . .\SharpHound.ps1
+syntax: Invoke-BloodHound -CollectionMethod All -Domain <DOMAIN> ZipFileName file.zip
+Once this has finished, we need to copy it across to our Kali machine and import it into BloodHound. One could use the SMB share or install WinCP on the Windows machine to achieve this. 
+Once copied across, go to BloodHound and click on the upload data icon on the right hand side. Then, select the file and let is import. Once done, go to the left hand side and check the data. Then, look through the Analysis tab for all the built-in queries. 
 
