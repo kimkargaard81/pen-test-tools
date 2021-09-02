@@ -208,4 +208,23 @@ We can also dump LSA secrets (where possible)
 syntax: crackmapexec smb 10.0.1.0/24 -u fcastle -d MARVEL.local -p Password1 --lsa
 
 There are a number of options with crackmapexec. 
+
+Dumping Hashes
+
+We are going to use secretsdump.py, which is also built into impactor. 
+
+syntax: secretsdump.py DOMAIN/USERNAME:PASSWORD@IP
+
+If Windows Defender does not block this, then it should dump the hashes of all the local users on the machine (note, not the Domain users). We can try different machines using the same login, to see if that user has access on those machines as well and then we can download additional hashes. 
+
+Once we have the hashes, copy them to a text file to crack and/or we can also pass the hash. 
+
+To crack the hashes of the local users, we are going to use hashcat again. Note, local user hashes on Windows are stored as NTLM and not NTLMv2. Also, Remember that one can pass around NTLM hashes, but NOT NTLMv2 hashes. 
+
+syntax: hashcat.exe -m 1000 /home/hacker/test.txt /usr/share/wordlists/rockyou.txt -O (on Windows, -m 1000 for NTLM)
+
+Now, to pass the hash, we are going to use crackmapexec. 
+
+syntax: crackmapexec smb IPRANGE -u "User Name" -H <HASH> --local-auth
+
 Pass the Hash
