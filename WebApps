@@ -34,5 +34,18 @@ Note that GoWitness needs at least version 1.16 of Golang installed (at the mome
 
 An automation script is available called run.sh which will automatically run against a domain and do all of the above, plus run an nmap scan and more. 
 
+OWASP Top 10
+
+https://owasp.org/www-project-top-ten/
+https://owasp.org/www-pdf-archive/OWASP_Top_10-2017_%28en%29.pdf.pdf
+
+OWASP Check List
+
+https://github.com/tanprathan/OWASP-Testing-Checklist
+
+OWASP Testing Guide
+
+https://owasp.org/www-project-web-security-testing-guide/assets/archive/OWASP_Testing_Guide_v4.pdf
+
 
 
