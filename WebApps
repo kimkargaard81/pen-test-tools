@@ -1,0 +1,38 @@
+1. Web Application Enumeration
+
+Note, this is once we have done the initial information gathering step in a pen test.
+
+We need to have Go installed. https://github.com/Dewalt-arch/pimpmykali
+
+AssetFinder
+
+install Assetfinder https://github.com/tomnomnom/assetfinder
+
+syntax: go get -u github.com/tomnomnom/assetfinder
+right, now we can use Assetfinder to find sub domains. 
+
+syntax: assetfinder domain.com > output.txt
+This is really fast. It is worth noting that is not only finds sub domains, but also assets that might belong to or are owned by the company. 
+If we just want subdomains, we can run:
+
+syntax: assetfinder --subs-only domainname > output.txt
+
+Amass - an OWASP tool 
+Should be installed on Kali already. It is very slow. 
+
+syntax: amass enum -d domainname
+
+HTTPprobe 
+
+useful to check if sites are up. 
+
+GoWitness
+
+https://github.com/sensepost/gowitness - for screenshots of websites
+
+Note that GoWitness needs at least version 1.16 of Golang installed (at the moment) to run and needs Chromium installed on Kali to actually work. 
+
+An automation script is available called run.sh which will automatically run against a domain and do all of the above, plus run an nmap scan and more. 
+
+
+
