@@ -124,5 +124,24 @@ Classic XXE payload
  
  5. Broken Access Control
  
+ We need to check if we can move to another user or access the admin account. Or, if we can post as a different user. For example, on a feedback form, we could inspect the source and see if we can find a section that says hidden. If we remove the hidden, it might should us the account nr linked to our account. If we then change that nr to another account, can we post feedback as a different user? 
  
-  
+ 6. Security Misconfiguration
+ 
+ This is a very wide aspect, but it can be anything from default credentials to error messages to misconfigured file upload types (where it says you can only upload PDF, but it still allows any other type of file upload). 
+ 
+ 7. Cross Site Scripting XSS
+ 
+ Three types of XSS
+ 
+ Reflected XSS - one injects code and it gets reflected back, it will not get stored
+ Stored XSS - a malicious payload it injected onto the application and then stored on the server
+ DOM XSS - This focuses on javascript and the Document Object Model (DOM), where a payload is inserted into the DOM. It is also client side, so not stored on the server. 
+ 
+ Reflected example:
+ 
+ index.php
+ 
+ <?php
+ $username = $_GET[´username´]
+ echo 
