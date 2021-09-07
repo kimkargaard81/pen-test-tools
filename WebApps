@@ -47,5 +47,41 @@ OWASP Testing Guide
 
 https://owasp.org/www-project-web-security-testing-guide/assets/archive/OWASP_Testing_Guide_v4.pdf
 
+1. SQL Injection
 
+On a login form, we can use Burp Suite to intercept the request when we try to log in with a username and password. Once we have that intercept, we can change the values for the username and send requests and then see the response from the server. It is possible that the server will provide us with some details. 
+
+input: test
+SQL: SELECT * FROM Users Where email='test';
+
+Input: test'
+SQL: SELECT * FROM Users Where email='test'';
+
+Input: test' OR 1=1; --
+SQL: SELECT * FROM Users Where email='test' OR 1=1; --';
+
+
+Blind SQL injection
+
+Input: test' (sleep 5)
+Input: test' (sleep 10)
+
+2. Broken Authentication
+
+If we can click on the forgot password and get information leakage, then that would be a finding. Especially if for example the web app confirms that the email exists as an account and provides us with a specific security question if we try to reset the password. 
+
+If we want to check the session management, we can attempt create an account on the system and then log in. When logging in, send the traffic to Burp Suite and see if there is a session token. See if we can manipulate that token or if it still exists once the user has been logged out. This would indicate broken authentication.
+
+3. Sensitive Data Exposure
+
+We can use Dirbuster or similar to see if we can find any files, backups etc that might be within the website. We can also check the source code and the requests to see if there is any information leakage. 
+Worth checking the headers. A useful tool is securityheaders.com 
+
+We should also be checking the encryption on the domain. We can use nmap.
+
+4. XML External Entities (XXE)
+
+
+
+syntax: nmap --script=ssl-enum-ciphers -p 443 domain
 
