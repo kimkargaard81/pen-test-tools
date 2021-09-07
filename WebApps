@@ -140,8 +140,17 @@ Classic XXE payload
  
  Reflected example:
  
- index.php
+ If the below was a page called index.php
  
  <?php
  $username = $_GET[´username´]
- echo 
+ echo "Hi $username";
+ ?>
+ 
+ if we then went to url/index.php?username=Kim we would get a response like:
+ 
+ Hi Kim
+ 
+ But, if we did this: url/index.php?<script>Alert(1)</script> instead, then this would bring up an alert box on the site. This would be a Reflected XSS. 
+ 
+ 
