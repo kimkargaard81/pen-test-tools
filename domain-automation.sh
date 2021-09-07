@@ -1,4 +1,5 @@
-#!/bin/bash	
+#!/bin/bash
+#code writen by Heath Adams from TCM Security
 url=$1
 if [ ! -d "$url" ];then
 	mkdir $url
