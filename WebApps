@@ -153,4 +153,12 @@ Classic XXE payload
  
  But, if we did this: url/index.php?<script>Alert(1)</script> instead, then this would bring up an alert box on the site. This would be a Reflected XSS. 
  
+ An example of Stored XSS
+ 
+ If we take the above code (url/index.php?<script>Alert(1)</script>) and posted it as a comment on a blog post (for example), then every time the page was loaded, the pop up would come up, because it is stored on the server.
+ 
+ It is important to note, for DOM and Reflective, we need to do some Social Engineering and get someone to click on a malicious link. 
+ 
+ DOM based: https://www.scip.ch/en/?labs.20171214
+ 
  
