@@ -22,6 +22,8 @@ If you need another password list, google "password seclist".
 
 2. SMB Relay
 
+smb enumeration: nmap -p 445 --script=smb-enum-shares.nse,smb-enum-users.nse IP
+
 Here, rather than cracking the password hash from the LLMNR poisoning done above, we are going to relay that hash to another machine on the network and attempt to gain access. Note, we can not relay back to the same machine. SMB signing must be disabled and the user has to be admin on the other machine. 
 
 To start with, we need to run a check to see which systems on the network have SMB signing disabled. We can use Nessus, nmap or even a github script to do that.
@@ -163,6 +165,8 @@ syntax: get-NetUser | select samaccountname
 We could also just get the descriptions by running:
 
 syntax: get-NetUser | select description
+
+syntax: Get-Group
 
 There are a huge amount of commands and details we can get from Powerview. It is worth digging around using the gists for example queries.
 
